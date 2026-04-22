@@ -62,22 +62,22 @@ export function deduplicateThinkingText(
 ): unknown {
   if (!response || typeof response !== 'object') return response;
 
-  const resp = response as Record<string, unknown>;
+  const responseRecord = response as Record<string, unknown>;
 
-  if (Array.isArray(resp.candidates)) {
-    const newCandidates = resp.candidates.map((candidate: unknown, index: number) => {
-      const cand = candidate as Record<string, unknown> | null;
-      if (!cand?.content) return candidate;
+  if (Array.isArray(responseRecord.candidates)) {
+    const newCandidates = responseRecord.candidates.map((candidate: unknown, index: number) => {
+      const candidateRecord = candidate as Record<string, unknown> | null;
+      if (!candidateRecord?.content) return candidate;
 
-      const content = cand.content as Record<string, unknown>;
+      const content = candidateRecord.content as Record<string, unknown>;
       if (!Array.isArray(content.parts)) return candidate;
 
       const newParts = content.parts.map((part: unknown) => {
-        const p = part as Record<string, unknown>;
-        
+        const partRecord = part as Record<string, unknown>;
+
         // Handle image data - save to disk and return file path
-        if (p.inlineData) {
-          const inlineData = p.inlineData as Record<string, unknown>;
+        if (partRecord.inlineData) {
+          const inlineData = partRecord.inlineData as Record<string, unknown>;
           const result = processImageData({
             mimeType: inlineData.mimeType as string | undefined,
             data: inlineData.data as string | undefined,
@@ -86,10 +86,10 @@ export function deduplicateThinkingText(
             return { text: result };
           }
         }
-        
-        if (p.thought === true || p.type === 'thinking') {
-          const fullText = (p.text || p.thinking || '') as string;
-          
+
+        if (partRecord.thought === true || partRecord.type === 'thinking') {
+          const fullText = (partRecord.text || partRecord.thinking || '') as string;
+
           if (displayedThinkingHashes) {
             const hash = hashString(fullText);
             if (displayedThinkingHashes.has(hash)) {
@@ -106,7 +106,7 @@ export function deduplicateThinkingText(
             sentBuffer.set(index, fullText);
 
             if (delta) {
-              return { ...p, text: delta, thinking: delta };
+              return { ...partRecord, text: delta, thinking: delta };
             }
             return null;
           }
@@ -117,24 +117,24 @@ export function deduplicateThinkingText(
         return part;
       });
 
-      const filteredParts = newParts.filter((p) => p !== null);
+      const filteredParts = newParts.filter((item) => item !== null);
 
       return {
-        ...cand,
+        ...candidateRecord,
         content: { ...content, parts: filteredParts },
       };
     });
 
-    return { ...resp, candidates: newCandidates };
+    return { ...responseRecord, candidates: newCandidates };
   }
 
-  if (Array.isArray(resp.content)) {
+  if (Array.isArray(responseRecord.content)) {
     let thinkingIndex = 0;
-    const newContent = resp.content.map((block: unknown) => {
-      const b = block as Record<string, unknown> | null;
-      if (b?.type === 'thinking') {
-        const fullText = (b.thinking || b.text || '') as string;
-        
+    const newContent = responseRecord.content.map((block: unknown) => {
+      const blockRecord = block as Record<string, unknown> | null;
+      if (blockRecord?.type === 'thinking') {
+        const fullText = (blockRecord.thinking || blockRecord.text || '') as string;
+
         if (displayedThinkingHashes) {
           const hash = hashString(fullText);
           if (displayedThinkingHashes.has(hash)) {
@@ -153,7 +153,7 @@ export function deduplicateThinkingText(
           thinkingIndex++;
 
           if (delta) {
-            return { ...b, thinking: delta, text: delta };
+            return { ...blockRecord, thinking: delta, text: delta };
           }
           return null;
         }
@@ -165,8 +165,8 @@ export function deduplicateThinkingText(
       return block;
     });
 
-    const filteredContent = newContent.filter((b) => b !== null);
-    return { ...resp, content: filteredContent };
+    const filteredContent = newContent.filter((item) => item !== null);
+    return { ...responseRecord, content: filteredContent };
   }
 
   return response;
@@ -232,29 +232,29 @@ export function cacheThinkingSignaturesFromResponse(
 ): void {
   if (!response || typeof response !== 'object') return;
 
-  const resp = response as Record<string, unknown>;
+  const responseRecord = response as Record<string, unknown>;
 
-  if (Array.isArray(resp.candidates)) {
-    resp.candidates.forEach((candidate: unknown, index: number) => {
-      const cand = candidate as Record<string, unknown> | null;
-      if (!cand?.content) return;
-      const content = cand.content as Record<string, unknown>;
+  if (Array.isArray(responseRecord.candidates)) {
+    responseRecord.candidates.forEach((candidate: unknown, index: number) => {
+      const candidateRecord = candidate as Record<string, unknown> | null;
+      if (!candidateRecord?.content) return;
+      const content = candidateRecord.content as Record<string, unknown>;
       if (!Array.isArray(content.parts)) return;
 
       content.parts.forEach((part: unknown) => {
-        const p = part as Record<string, unknown>;
-        if (p.thought === true || p.type === 'thinking') {
-          const text = (p.text || p.thinking || '') as string;
+        const partRecord = part as Record<string, unknown>;
+        if (partRecord.thought === true || partRecord.type === 'thinking') {
+          const text = (partRecord.text || partRecord.thinking || '') as string;
           if (text) {
             const current = thoughtBuffer.get(index) ?? '';
             thoughtBuffer.set(index, current + text);
           }
         }
 
-        if (p.thoughtSignature) {
+        if (partRecord.thoughtSignature) {
           const fullText = thoughtBuffer.get(index) ?? '';
           if (fullText) {
-            const signature = p.thoughtSignature as string;
+            const signature = partRecord.thoughtSignature as string;
             onCacheSignature?.(signatureSessionKey, fullText, signature);
             signatureStore.set(signatureSessionKey, { text: fullText, signature });
           }
@@ -263,23 +263,23 @@ export function cacheThinkingSignaturesFromResponse(
     });
   }
 
-  if (Array.isArray(resp.content)) {
+  if (Array.isArray(responseRecord.content)) {
     // Use thoughtBuffer to accumulate thinking text across SSE events
     // Claude streams thinking content and signature in separate events
     const CLAUDE_BUFFER_KEY = 0; // Use index 0 for Claude's single-stream content
-    resp.content.forEach((block: unknown) => {
-      const b = block as Record<string, unknown> | null;
-      if (b?.type === 'thinking') {
-        const text = (b.thinking || b.text || '') as string;
+    responseRecord.content.forEach((block: unknown) => {
+      const blockRecord = block as Record<string, unknown> | null;
+      if (blockRecord?.type === 'thinking') {
+        const text = (blockRecord.thinking || blockRecord.text || '') as string;
         if (text) {
           const current = thoughtBuffer.get(CLAUDE_BUFFER_KEY) ?? '';
           thoughtBuffer.set(CLAUDE_BUFFER_KEY, current + text);
         }
       }
-      if (b?.signature) {
+      if (blockRecord?.signature) {
         const fullText = thoughtBuffer.get(CLAUDE_BUFFER_KEY) ?? '';
         if (fullText) {
-          const signature = b.signature as string;
+          const signature = blockRecord.signature as string;
           onCacheSignature?.(signatureSessionKey, fullText, signature);
           signatureStore.set(signatureSessionKey, { text: fullText, signature });
         }
