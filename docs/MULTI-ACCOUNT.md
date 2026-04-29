@@ -83,8 +83,8 @@ Or select an account from the list and choose "Enable/Disable account".
 - Still appear in quota checks (marked `[disabled]`)
 - Can be re-enabled at any time
 
-This is useful when:
-- An account is temporarily banned or rate-limited for extended periods
+Useful when:
+- An account is temporarily banned or rate-limited for an extended period
 - You want to reserve certain accounts for specific use cases
 - Testing with a subset of accounts
 
