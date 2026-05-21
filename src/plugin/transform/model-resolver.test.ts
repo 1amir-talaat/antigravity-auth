@@ -2,6 +2,25 @@ import { describe, it, expect } from "vitest";
 import { resolveModelWithTier, resolveModelWithVariant, resolveModelForHeaderStyle } from "./model-resolver";
 
 describe("resolveModelWithTier", () => {
+  describe("current Antigravity quota-row model IDs", () => {
+    it.each([
+      ["antigravity-gemini-3.1-pro-low", "gemini-3.1-pro-low", "low", undefined],
+      ["antigravity-gemini-3.1-pro-high", "gemini-3.1-pro-high", "high", undefined],
+      ["antigravity-claude-sonnet-4-6-thinking", "claude-sonnet-4-6-thinking", undefined, 32768],
+      ["antigravity-claude-opus-4-6-thinking", "claude-opus-4-6-thinking", undefined, 32768],
+      ["antigravity-gpt-oss-120b-medium", "gpt-oss-120b-medium", undefined, undefined],
+      ["antigravity-gemini-3.5-flash-medium", "gemini-3.5-flash-medium", "medium", undefined],
+      ["antigravity-gemini-3.5-flash-high", "gemini-3.5-flash-high", "high", undefined],
+    ])("keeps %s mapped to %s", (requestedModel, actualModel, thinkingLevel, thinkingBudget) => {
+      const result = resolveModelForHeaderStyle(requestedModel, "antigravity");
+      expect(result.actualModel).toBe(actualModel);
+      expect(result.thinkingLevel).toBe(thinkingLevel);
+      expect(result.thinkingBudget).toBe(thinkingBudget);
+      expect(result.quotaPreference).toBe("antigravity");
+      expect(result.explicitQuota).toBe(true);
+    });
+  });
+
   describe("Gemini 3 flash models (Issue #109)", () => {
     it("antigravity-gemini-3-flash gets default thinkingLevel 'low'", () => {
       const result = resolveModelWithTier("antigravity-gemini-3-flash");
