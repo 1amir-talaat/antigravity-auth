@@ -116,6 +116,19 @@ describe("resolveModelWithTier", () => {
       expect(result.actualModel).toBe("gemini-3.1-pro-low");
       expect(result.thinkingLevel).toBe("low");
     });
+
+    it("antigravity-gemini-3.5-flash defaults to current Medium quota tier", () => {
+      const result = resolveModelWithTier("antigravity-gemini-3.5-flash");
+      expect(result.actualModel).toBe("gemini-3.5-flash");
+      expect(result.thinkingLevel).toBe("medium");
+      expect(result.quotaPreference).toBe("antigravity");
+    });
+
+    it("antigravity-gemini-3.5-flash-high gets thinkingLevel from tier", () => {
+      const result = resolveModelWithTier("antigravity-gemini-3.5-flash-high");
+      expect(result.actualModel).toBe("gemini-3.5-flash");
+      expect(result.thinkingLevel).toBe("high");
+    });
   });
 
   describe("Claude thinking models default budget", () => {
@@ -168,6 +181,16 @@ describe("resolveModelWithTier", () => {
       expect(result.actualModel).toBe("gemini-3-pro-image");
       expect(result.isImageModel).toBe(true);
       expect(result.explicitQuota).toBe(true);
+      expect(result.quotaPreference).toBe("antigravity");
+    });
+  });
+
+  describe("GPT-OSS current quota model", () => {
+    it("does not strip -medium because it is part of the model ID", () => {
+      const result = resolveModelWithTier("antigravity-gpt-oss-120b-medium");
+      expect(result.actualModel).toBe("gpt-oss-120b-medium");
+      expect(result.thinkingLevel).toBeUndefined();
+      expect(result.thinkingBudget).toBeUndefined();
       expect(result.quotaPreference).toBe("antigravity");
     });
   });

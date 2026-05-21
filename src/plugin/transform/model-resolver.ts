@@ -216,11 +216,17 @@ export function resolveModelWithTier(requestedModel: string, options: ModelResol
   const isClaudeThinking = resolvedModel.toLowerCase().includes("claude") && resolvedModel.toLowerCase().includes("thinking");
 
   if (!tier) {
-    // Gemini 3 models without explicit tier get a default thinkingLevel
+    // Gemini 3 models without explicit tier get a default thinkingLevel.
+    // Current Antigravity quota exposes Gemini 3.5 Flash as Medium/High only,
+    // so the bare model maps to Medium instead of the legacy Low default.
     if (isEffectiveGemini3) {
+      const defaultThinkingLevel = resolvedModel.toLowerCase().startsWith("gemini-3.5-flash")
+        ? "medium"
+        : "low";
+
       return {
         actualModel: resolvedModel,
-        thinkingLevel: "low",
+        thinkingLevel: defaultThinkingLevel,
         isThinkingModel: true,
         quotaPreference,
         explicitQuota,
@@ -269,10 +275,13 @@ export function resolveModelWithTier(requestedModel: string, options: ModelResol
 /**
  * Gets the model family for routing decisions.
  */
-export function getModelFamily(model: string): "claude" | "gemini-flash" | "gemini-pro" {
+export function getModelFamily(model: string): "claude" | "gemini-flash" | "gemini-pro" | "gpt-oss" {
   const lower = model.toLowerCase();
   if (lower.includes("claude")) {
     return "claude";
+  }
+  if (lower.includes("gpt-oss")) {
+    return "gpt-oss";
   }
   if (lower.includes("flash")) {
     return "gemini-flash";
