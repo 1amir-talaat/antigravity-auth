@@ -1,14 +1,49 @@
 # Changelog
 
-## [Unreleased]
+## [1.7.0-beta.0] - 2026-05-21
 
 ### Added
 
 - **Gemini 3.5 Flash** - Added `gemini-3.5-flash` across both quota pools: Antigravity (`antigravity-gemini-3.5-flash`) and Gemini CLI (bare `gemini-3.5-flash`). Flash exposes `minimal`/`low`/`medium`/`high` thinking levels. Rollout-dependent.
+- **OAuth Alignment (Phase 1)** — OAuth flow now matches official Antigravity CLI signals:
+  - Added `openid` scope to the OAuth scope set (6 scopes total).
+  - Added `official-callback` redirect mode (`https://antigravity.google/oauth-callback`) as an opt-in alternative to the existing local callback.
+  - Added `getRedirectUri()` and `getAuthEndpoint()` helpers in `constants.ts`.
+  - Added `redactOAuthSensitiveData()` to scrub codes, tokens, and PKCE verifiers from error messages.
+  - Added 32 OAuth tests covering URL construction, scopes, PKCE, state round-trip, token exchange, and error redaction.
+- **Endpoint Reconciliation (Phase 2)** — Gateway endpoints updated to match official `agy` CLI observations:
+  - Added `ANTIGRAVITY_ENDPOINT_DAILY_NONSANDBOX` (`daily-cloudcode-pa.googleapis.com`) as primary endpoint.
+  - Updated fallback order: non-sandbox daily → sandbox daily → prod.
+  - Removed autopush sandbox from fallback chain (consistently unavailable).
+  - Added `agy` version detection via local binary (`tryLocalAgyVersion()`).
+  - Added 19 endpoint tests covering fallback order and gemini-cli prod-only invariant.
+- **Transport Boundary (Phase 3)** — Gateway logic isolated behind a `Transport` interface:
+  - New `src/plugin/transport/types.ts` with `Transport`, `PreparedTransportRequest`, and related types.
+  - New `src/plugin/transport/gateway-transport.ts` wrapping existing gateway logic.
+  - `plugin.ts` now routes through `gatewayTransport` instead of calling `request.ts` directly.
+  - Added `transport=gateway` debug label on every outbound request.
+  - Added 19 transport wrapper equivalence tests.
+- **CliTransport — opt-in `agy` agent backend (Phase 4, experimental):**
+  - New `src/plugin/transport/cli-transport.ts` — runs `agy --print` as a subprocess.
+  - New `src/plugin/transport/agy-cli.ts` — binary detection, auth state probe, command execution.
+  - Disabled by default (`transport.cli.enabled: false`).
+- **ManagedAgentTransport — opt-in public Interactions API (Phase 5, experimental):**
+  - New `src/plugin/transport/managed-agent-transport.ts` — uses `/v1beta/interactions` with Gemini API key.
+  - Disabled by default (`transport.managed_agent.enabled: false`).
+- **Config schema** — new `transport` block with `id`, `cli`, and `managed_agent` sub-configs.
+- **Current Antigravity model set** — default OpenCode model definitions now match the current Antigravity Model Quota view.
+- **New docs:** `SUPPORT_MATRIX.md`, `ANTIGRAVITY_CLI_MIGRATION_PLAN.md`, `ANTIGRAVITY_PHASE0_BASELINE.md`.
 
 ### Changed
 
-- **Bare Gemini CLI names for 3.1+** - Dotted-minor generations now use bare model names on the Gemini CLI backend (e.g. `gemini-3.1-pro`, `gemini-3.5-flash`) instead of the legacy `-preview` suffix, matching the `agy`/`gemini` CLIs. Renamed the `gemini-3.1-pro-preview` entry to `gemini-3.1-pro`. The 3.0 line (`gemini-3-pro-preview`, `gemini-3-flash-preview`) and the legacy `gemini-3.1-pro-preview-customtools` entry are unchanged, and previously-configured model strings still route via the resolver.
+- **Bare Gemini CLI names for 3.1+** - Dotted-minor generations now use bare model names on the Gemini CLI backend (e.g. `gemini-3.1-pro`, `gemini-3.5-flash`) instead of the legacy `-preview` suffix, matching the `agy`/`gemini` CLIs. The 3.0 line and legacy `-preview-customtools` entries are unchanged.
+- **Primary endpoint** changed to `daily-cloudcode-pa.googleapis.com` (matches official `agy` CLI behavior).
+- **Default model list** no longer includes Gemini CLI models (sunsetting 2026-06-18). Legacy resolver/fallback support remains.
+
+### Risk Notes
+
+- **Gemini CLI sunset: 2026-06-18.**
+- **CliTransport and ManagedAgentTransport are experimental.** Both disabled by default.
 
 ## [1.6.0] - 2026-02-20
 

@@ -785,6 +785,7 @@ export function prepareAntigravityRequest(
   request: RequestInfo;
   init: RequestInit;
   streaming: boolean;
+  action: string;
   requestedModel?: string;
   effectiveModel?: string;
   projectId?: string;
@@ -812,6 +813,7 @@ export function prepareAntigravityRequest(
       request: input,
       init: { ...baseInit, headers },
       streaming: false,
+      action: "",
       headerStyle,
     };
   }
@@ -829,6 +831,7 @@ export function prepareAntigravityRequest(
       request: input,
       init: { ...baseInit, headers },
       streaming: false,
+      action: "",
       headerStyle,
     };
   }
@@ -1633,6 +1636,7 @@ export function prepareAntigravityRequest(
       body,
     },
     streaming,
+    action: rawAction,
     requestedModel,
     effectiveModel: effectiveModel,
     projectId: resolvedProjectId,
