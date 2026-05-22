@@ -65,6 +65,8 @@ const QUOTA_PREFIX_REGEX = /^antigravity-/i;
 const GEMINI_3_PRO_REGEX = /^gemini-3(?:\.\d+)?-pro/i;
 const GEMINI_3_FLASH_REGEX = /^gemini-3(?:\.\d+)?-flash/i;
 const GEMINI_35_FLASH_REGEX = /^gemini-3\.5-flash/i;
+const GEMINI_35_FLASH_LOW_MODEL = "gemini-3.5-flash-low";
+const GEMINI_35_FLASH_HIGH_MODEL = "gemini-3-flash-agent";
 
 // ANTIGRAVITY_ONLY_MODELS removed - all models now default to antigravity
 
@@ -141,6 +143,24 @@ function isGemini3FlashModel(model: string): boolean {
 
 function isGemini35FlashModel(model: string): boolean {
   return GEMINI_35_FLASH_REGEX.test(model);
+}
+
+/**
+ * Cloud Code does not expose a bare `gemini-3.5-flash` backend id.
+ * Antigravity/agy resolves the UI model to these advertised ids instead.
+ */
+export function resolveAntigravityGemini35FlashBackendModel(
+  model: string,
+  thinkingLevel?: string,
+): string | undefined {
+  const modelWithoutQuota = model.replace(QUOTA_PREFIX_REGEX, "");
+  const match = modelWithoutQuota.match(GEMINI_35_FLASH_REGEX);
+  if (!match) {
+    return undefined;
+  }
+
+  const level = (thinkingLevel ?? "low").toLowerCase();
+  return level === "high" ? GEMINI_35_FLASH_HIGH_MODEL : GEMINI_35_FLASH_LOW_MODEL;
 }
 
 /**
