@@ -68,4 +68,9 @@ export const OPENCODE_MODEL_DEFINITIONS: OpencodeModelDefinitions = {
     limit: { context: 1048576, output: 65536 },
     modalities: DEFAULT_MODALITIES,
   },
+  "antigravity-gemini-3.5-flash-high": {
+    name: "Gemini 3.5 Flash High (Antigravity)",
+    limit: { context: 1048576, output: 65536 },
+    modalities: DEFAULT_MODALITIES,
+  },
 };

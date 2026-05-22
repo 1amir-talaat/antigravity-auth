@@ -456,7 +456,7 @@ Current default model IDs are based on the Antigravity Model Quota view:
 - `antigravity-gemini-3.1-pro-low`
 - `antigravity-gemini-3.1-pro-high`
 - `antigravity-gemini-3.5-flash-low`
-- `antigravity-gemini-3.5-flash-low`
+- `antigravity-gemini-3.5-flash-high`
 - `antigravity-claude-sonnet-4-6`
 - `antigravity-claude-opus-4-6-thinking`
 - `antigravity-gpt-oss-120b-medium`

@@ -380,7 +380,7 @@
               "type": "boolean"
             },
             "dangerously_skip_permissions": {
-              "default": true,
+              "default": false,
               "type": "boolean"
             }
           },

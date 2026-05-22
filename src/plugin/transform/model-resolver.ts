@@ -40,8 +40,8 @@ export const GEMINI_3_THINKING_LEVELS = ["minimal", "low", "medium", "high"] as 
 export const MODEL_ALIASES: Record<string, string> = {
   // Gemini 3 variants - for Gemini CLI only (tier stripped, thinkingLevel used)
   // For Antigravity, these are bypassed and full model name is kept
-  "gemini-3-pro-low": "gemini-3-pro",
-  "gemini-3-pro-high": "gemini-3-pro",
+  "gemini-3-pro-low": "gemini-3.1-pro",
+  "gemini-3-pro-high": "gemini-3.1-pro",
   "gemini-3.1-pro-low": "gemini-3.1-pro",
   "gemini-3.1-pro-high": "gemini-3.1-pro",
   "gemini-3-flash-low": "gemini-3-flash",
@@ -67,6 +67,28 @@ const GEMINI_3_FLASH_REGEX = /^gemini-3(?:\.\d+)?-flash/i;
 const GEMINI_35_FLASH_REGEX = /^gemini-3\.5-flash/i;
 const GEMINI_35_FLASH_LOW_MODEL = "gemini-3.5-flash-low";
 const GEMINI_35_FLASH_HIGH_MODEL = "gemini-3-flash-agent";
+
+const LEGACY_MODEL_ALIASES: Record<string, string> = {
+  "antigravity-gemini-3-pro": "antigravity-gemini-3.1-pro",
+  "gemini-3-pro": "gemini-3.1-pro",
+  "gemini-3-pro-preview": "gemini-3.1-pro-preview",
+  "antigravity-claude-sonnet-4-5": "antigravity-claude-sonnet-4-6",
+  "claude-sonnet-4-5": "claude-sonnet-4-6",
+  "antigravity-claude-opus-4-5": "antigravity-claude-opus-4-6-thinking",
+  "claude-opus-4-5": "claude-opus-4-6-thinking",
+  "antigravity-claude-opus-4-5-thinking": "antigravity-claude-opus-4-6-thinking",
+  "claude-opus-4-5-thinking": "claude-opus-4-6-thinking",
+};
+
+/** Normalizes legacy model names to their current equivalents. */
+function normalizeLegacyModel(model: string): string {
+  const tier = extractThinkingTierFromModel(model);
+  const baseName = tier ? model.replace(TIER_REGEX, "") : model;
+  const normalizedBase = LEGACY_MODEL_ALIASES[baseName.toLowerCase()];
+  if (!normalizedBase) return model;
+  if (!tier) return normalizedBase;
+  return supportsThinkingTiers(normalizedBase) ? `${normalizedBase}-${tier}` : normalizedBase;
+}
 
 // ANTIGRAVITY_ONLY_MODELS removed - all models now default to antigravity
 
@@ -184,8 +206,9 @@ export function resolveAntigravityGemini35FlashBackendModel(
  * @returns Resolved model with thinking configuration
  */
 export function resolveModelWithTier(requestedModel: string, options: ModelResolverOptions = {}): ResolvedModel {
-  const isAntigravity = QUOTA_PREFIX_REGEX.test(requestedModel);
-  const modelWithoutQuota = requestedModel.replace(QUOTA_PREFIX_REGEX, "");
+  const normalizedModel = normalizeLegacyModel(requestedModel);
+  const isAntigravity = QUOTA_PREFIX_REGEX.test(normalizedModel);
+  const modelWithoutQuota = normalizedModel.replace(QUOTA_PREFIX_REGEX, "");
 
   const tier = extractThinkingTierFromModel(modelWithoutQuota);
   const baseName = tier ? modelWithoutQuota.replace(TIER_REGEX, "") : modelWithoutQuota;
@@ -355,15 +378,16 @@ export function resolveModelForHeaderStyle(
   requestedModel: string,
   headerStyle: "antigravity" | "gemini-cli"
 ): ResolvedModel {
-  const lower = requestedModel.toLowerCase();
+  const normalized = normalizeLegacyModel(requestedModel);
+  const lower = normalized.toLowerCase();
   const isGemini3 = lower.includes("gemini-3");
   
   if (!isGemini3) {
-    return resolveModelWithTier(requestedModel);
+    return resolveModelWithTier(normalized);
   }
 
   if (headerStyle === "antigravity") {
-    let transformedModel = requestedModel
+    let transformedModel = normalized
       .replace(/-preview-customtools$/i, "")
       .replace(/-preview$/i, "")
       .replace(/^antigravity-/i, "");
@@ -382,7 +406,7 @@ export function resolveModelForHeaderStyle(
   }
   
   if (headerStyle === "gemini-cli") {
-    let transformedModel = requestedModel
+    let transformedModel = normalized
       .replace(/^antigravity-/i, "")
       .replace(/-(low|medium|high)$/i, "");
 

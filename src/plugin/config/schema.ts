@@ -470,7 +470,7 @@ export const AntigravityConfigSchema = z.object({
       /** Run agy in sandbox mode. */
       sandbox: z.boolean().default(false),
       /** Skip permission prompts in agy. */
-      dangerously_skip_permissions: z.boolean().default(true),
+      dangerously_skip_permissions: z.boolean().default(false),
     }).optional(),
 
     managed_agent: z.object({

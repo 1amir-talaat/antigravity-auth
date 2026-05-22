@@ -18,6 +18,7 @@ describe("OPENCODE_MODEL_DEFINITIONS", () => {
       "antigravity-claude-sonnet-4-6",
       "antigravity-gemini-3.1-pro-high",
       "antigravity-gemini-3.1-pro-low",
+      "antigravity-gemini-3.5-flash-high",
       "antigravity-gemini-3.5-flash-low",
       "antigravity-gpt-oss-120b-medium",
     ]);
@@ -27,6 +28,7 @@ describe("OPENCODE_MODEL_DEFINITIONS", () => {
     expect(getModel("antigravity-gemini-3.1-pro-low").variants).toBeUndefined();
     expect(getModel("antigravity-gemini-3.1-pro-high").variants).toBeUndefined();
     expect(getModel("antigravity-gemini-3.5-flash-low").variants).toBeUndefined();
+    expect(getModel("antigravity-gemini-3.5-flash-high").variants).toBeUndefined();
   });
 
   it("keeps single-row quota models as direct model definitions", () => {

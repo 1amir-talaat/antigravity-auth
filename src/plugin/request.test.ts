@@ -1233,7 +1233,7 @@ it("removes x-api-key header", () => {
         expect(result.effectiveModel).toBe("gemini-3.1-pro-preview");
       });
 
-      it("transforms gemini-3.1-pro-low to gemini-3.1-pro (bare) for gemini-cli headerStyle", () => {
+      it("transforms gemini-3.1-pro-low to gemini-3.1-pro-preview for gemini-cli headerStyle", () => {
         const result = prepareAntigravityRequest(
           "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-low:generateContent",
           { method: "POST", body: JSON.stringify({ contents: [] }) },
@@ -1242,10 +1242,10 @@ it("removes x-api-key header", () => {
           undefined,
           "gemini-cli"
         );
-        expect(result.effectiveModel).toBe("gemini-3.1-pro");
+        expect(result.effectiveModel).toBe("gemini-3.1-pro-preview");
       });
 
-      it("strips legacy gemini-3.1-pro-preview to bare name for gemini-cli headerStyle", () => {
+      it("keeps gemini-3.1-pro-preview as gemini-3.1-pro-preview for gemini-cli headerStyle", () => {
         const result = prepareAntigravityRequest(
           "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent",
           { method: "POST", body: JSON.stringify({ contents: [] }) },
@@ -1254,10 +1254,10 @@ it("removes x-api-key header", () => {
           undefined,
           "gemini-cli"
         );
-        expect(result.effectiveModel).toBe("gemini-3.1-pro");
+        expect(result.effectiveModel).toBe("gemini-3.1-pro-preview");
       });
 
-      it("keeps gemini-3.5-flash as gemini-3.5-flash (bare) for gemini-cli headerStyle", () => {
+      it("keeps gemini-3.5-flash as gemini-3.5-flash-preview for gemini-cli headerStyle", () => {
         const result = prepareAntigravityRequest(
           "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent",
           { method: "POST", body: JSON.stringify({ contents: [] }) },
@@ -1266,7 +1266,7 @@ it("removes x-api-key header", () => {
           undefined,
           "gemini-cli"
         );
-        expect(result.effectiveModel).toBe("gemini-3.5-flash");
+        expect(result.effectiveModel).toBe("gemini-3.5-flash-preview");
       });
 
       it("injects default thinkingLevel for bare gemini-3.5-flash on gemini-cli", () => {
